@@ -1,0 +1,12 @@
+version: '3'
+services:
+    client:
+        build: ./client
+        ports:
+            - "80:80"
+        restart: always
+    sever:
+        build: ./server
+        ports:
+            - "8080:8080"
+        restart: always
