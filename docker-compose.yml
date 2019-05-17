@@ -4,9 +4,20 @@ services:
         build: ./client
         ports:
             - "80:80"
-        restart: always
     sever:
         build: ./server
         ports:
             - "8080:8080"
-        restart: always
+    mysql:
+        build: ./mysql
+        tty: true
+        environment:
+            - MYSQL_ROOT_USER=root
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=vote
+            - MYSQL_USER=vote
+            - MYSQL_PASSWORD=i348yr3894769487r907340uf90
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./mysql/data:/var/lib/mysql

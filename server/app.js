@@ -1,9 +1,19 @@
 const app = require('http').createServer();
 const io = require('socket.io')(app);
+const mysql = require('mysql2');
 
 const config = {
     port: 8080,
     queue_limit: 1000,
+    database: {
+        options: {
+            host: 'mysql',
+            user: 'vote',
+            password: 'i348yr3894769487r907340uf90',
+            database: 'vote',
+        },
+        retry: 3,
+    },
 };
 
 class Counter {
@@ -43,16 +53,41 @@ class Counter {
             process();
         }
     }
+    async query(sql, values, tried=0) {
+        try {
+            return await this.db.query(sql, values);
+        } catch (e) {
+            if (e.code === 'ECONNREFUSED') {
+                if (config.database.retry > tried) {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            resolve(this.query(sql, values, tried+1));
+                        }, 10000);
+                    })
+                }
+            }
+            throw e;
+        }
+    }
     async add(campagin, candidate, user) {
-        // TODO add vote to db
+        // TODO add vote to db and update state
     }
     async refresh() {
-        // TODO fetch result data and set to state
-    }
-    async static mount(config) {
         try {
-            const counter = new Counter();
+            const campaigns = await this.query('SELECT * FROM `campaigns`');
+            for (let campaign of campaigns) {
+                console.log(campaign);
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+    static async mount() {
+        try {
+            const db = await mysql.createPool(config.database.options);
+            const counter = new Counter(db.promise());
             await counter.refresh();
+            return counter;
         } catch (e) {
             throw e;
         }
@@ -61,9 +96,9 @@ class Counter {
 
 (async () => {
     try {
-        const counter = await Counter.mount({});
+        const counter = await Counter.mount(config.database);
         
-        server.listen(config.port);
+        app.listen(config.port);
         
         io.on('connection', socket => {
             socket.on('vote', (campagin, candidate, user, res) => {
