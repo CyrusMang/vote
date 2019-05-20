@@ -10,8 +10,8 @@ const Counter = require('./modules/counter');
         
         io.on('connection', socket => {
             socket.emit('state', counter.state);
-            socket.on('vote', (campagin, candidate, user, res) => {
-                counter.vote(campagin, candidate, user, (result, e) => {
+            socket.on('vote', (campagin_id, user_idcard, candidate_id, res) => {
+                counter.vote(campagin_id, user_idcard, candidate_id, (result, e) => {
                     res(result, e);
                     if (!e) {
                         socket.broadcast.emit('state', counter.state);
