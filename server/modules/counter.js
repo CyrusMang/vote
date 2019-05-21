@@ -95,7 +95,6 @@ class Counter {
                     }),
                     start_date: campaign.start_date,
                     end_date: campaign.end_date,
-                    votes: votes[0][0].n,
                 }
             }
         } catch (e) {
