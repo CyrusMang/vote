@@ -1,4 +1,4 @@
-module.export = {
+module.exports = {
     port: 8080,
     queue_limit: 1000,
     database: {

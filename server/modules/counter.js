@@ -81,7 +81,7 @@ class Counter {
     async refresh() {
         try {
             const campaigns = await this.query('SELECT * FROM campaigns');
-            for (let campaign of campaigns) {
+            for (let campaign of campaigns[0]) {
                 const votes = await this.query(`SELECT * FROM campaign_user WHERE campaign_id = ?`, [campaign.id]);
                 let count = {}
                 for (let vote of votes) {
@@ -89,8 +89,8 @@ class Counter {
                 }
                 this.state[campaign.id] = {
                     title: campaign.title,
-                    candidates: campaign.candidates.map(c => {
-                        c.votes = count[vote.candidate_id] || 0;
+                    candidates: JSON.parse(campaign.candidates).map(c => {
+                        c.votes = count[campaign.id] || 0;
                         return c
                     }),
                     start_date: campaign.start_date,
@@ -113,4 +113,4 @@ class Counter {
     }
 };
 
-module.export = Counter;
+module.exports = Counter;

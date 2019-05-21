@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import socket from '../helpers/socket';
 
 const CampaignList = () => {
@@ -26,23 +27,24 @@ const Campaign = ({data}) => {
   const [state, setState] = useState({status: 'pending'});
   
   const select = useCallback(e => {
-    setState({status: 'selected', e.target.getAttribute('data-candidate')})
-  }, [])
+    const candidate_id = e.target.getAttribute('data-candidate');
+    setState({status: 'selected', candidate_id})
+  }, []);
   
   const change = useCallback(e => {
-    setState(prevState => {
+    setState(prevState => ({
       ...prevState,
       idcard: e.target.value,
-    });
+    }));
   }, []);
   
   const submit = useCallback(() => {
     socket.emit('vote', data.id, state.idcard, state.candidate_id, (result, e) => {
       if (e) {
-        return setState(prevState => {...prevState, error: e});
+        return setState(prevState => ({...prevState, error: e}));
       }
       setState({status: 'voted'});
-    })
+    });
   }, [data, state]);
   
   return (
@@ -56,14 +58,14 @@ const Campaign = ({data}) => {
             {state.status === 'selected' && state.candidate_id === candidate.id ? (
               <div>
                 {state.error ? (<p className>{state.error}</p>) : ''}
-                <input onChange={change} placeholder={'Please enter your ID card number'} value={idcard.number}>
+                <input onChange={change} placeholder={'Please enter your ID card number'} value={state.idcard}/>
                 <a href='javascript:' onClick={submit}>submit</a>
               </div>
-            ) : {state.status === 'voted' ? (
+            ) : state.status === 'voted' ? (
               <p>{'You voted'}</p>
             ) : (
               <a href='javascript:' onClick={select} data-candidate={candidate.id}>Vote</a>
-            )}}
+            )}
           </li>
         ))}
       </ul>

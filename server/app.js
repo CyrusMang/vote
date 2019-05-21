@@ -1,5 +1,6 @@
 const app = require('http').createServer();
 const io = require('socket.io')(app);
+const config = require('./config');
 const Counter = require('./modules/counter');
 
 (async () => {

@@ -1,3 +1,3 @@
 var config = {
-    main: 'https://',
+    main: 'https://localhost:8080',
 }
