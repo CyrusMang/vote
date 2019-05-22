@@ -66,6 +66,9 @@ const Campaign = ({data, setCampaigns}) => {
     });
   }, [data, result, setCampaigns]);
   
+  const now = new Date();
+  const activated = data.start_date < now && now < data.end_date;
+  
   return (
     <div>
       <h2>{data.title}</h2>
@@ -74,17 +77,21 @@ const Campaign = ({data, setCampaigns}) => {
         {data.candidates.map(candidate => (
           <li key={candidate.id}>
             <p>{`${candidate.name} - ${candidate.votes}`}</p>
-            {result.status === 'selected' && result.candidate_id === candidate.id ? (
-              <div>
-                {result.error ? (<p className='error'>{result.error}</p>) : ''}
-                <input onChange={change} placeholder={'Please enter your ID card number'} value={result.idcard || ''}/>
-                <a href='#submit' onClick={submit}>submit</a>
-              </div>
-            ) : result.status === 'voted' ? result.candidate_id === candidate.id ? (
-              <p>{'You voted'}</p>
-            ) : '' : (
-              <a href={`#candidate-${candidate.id}`} onClick={select} data-candidate={candidate.id}>Vote</a>
-            )}
+            {activated ? (
+                <div>
+                    {result.status === 'selected' && result.candidate_id === candidate.id ? (
+                      <div>
+                        {result.error ? (<p className='error'>{result.error}</p>) : ''}
+                        <input onChange={change} placeholder={'Please enter your ID card number'} value={result.idcard || ''}/>
+                        <a href='#submit' onClick={submit}>submit</a>
+                      </div>
+                    ) : result.status === 'voted' ? result.candidate_id === candidate.id ? (
+                      <p>{'You voted'}</p>
+                    ) : '' : (
+                      <a href={`#candidate-${candidate.id}`} onClick={select} data-candidate={candidate.id}>Vote</a>
+                    )}
+                </div>
+            ) : ''}
           </li>
         ))}
       </ul>

@@ -13,10 +13,19 @@ class Counter {
         if (this.queue.length >= config.queue_limit) {
             return res(null, {message: 'Sorry, our server is busy. please try again later.'});
         }
-        this.queue.push({data: [campaign_id, user_idcard, candidate_id], res});
-        if (!this.running) {
-            this.process();
+        const now = new Date();
+        const campaign = this.state.campaigns.find(c => c.id === campaign_id);
+        if (campaign && campaign.start_date < now && now < campaign.end_date) {
+            const candidate = campaign.candidates.find(c => c.id === candidate_id);
+            if (candidate) {
+                this.queue.push({data: [campaign_id, user_idcard, candidate_id], res});
+                if (!this.running) {
+                    this.process();
+                }
+                return;
+            }
         }
+        res(null, {message: 'Invalid vote'});
     }
     process() {
         this.running = true;
@@ -41,39 +50,36 @@ class Counter {
     async add(campaign_id, user_idcard, candidate_id) {
         try {
             const campaign = this.state.campaigns.find(c => c.id === campaign_id);
-            if (campaign) {
-                const candidate = campaign.candidates.find(c => c.id === candidate_id);
-                if (candidate) {
-                    const user = await this.query('SELECT * FROM users WHERE idcard = ? LIMIT 1', [user_idcard]);
-                    let user_id = user[0].length ? user[0][0].id : null;
-                    if (user_id) {
-                        const voted = await this.query(`
-                            SELECT * FROM campaign_user WHERE user_id = ? AND campaign_id = ? LIMIT 1
-                        `, [user_id, campaign.id]);
-                        if (voted[0].length) {
-                            return false;
-                        }
-                    } else {
-                        const result = await this.query(`INSERT INTO users (idcard) VALUES (?)`, [user_idcard]);
-                        user_id = result[0].insertId;
-                    }
-                    await this.query(`
-                        INSERT INTO campaign_user (campaign_id, user_id, candidate_id) 
-                        VALUES (?, ?, ?)
-                    `, [campaign.id, user_id, candidate.id]);
-                    candidate.votes++
-                    return true;
+            const user = await this.query('SELECT * FROM users WHERE idcard = ? LIMIT 1', [user_idcard]);
+            let user_id = user[0].length ? user[0][0].id : null;
+            if (user_id) {
+                const voted = await this.query(`
+                    SELECT * FROM campaign_user WHERE user_id = ? AND campaign_id = ? LIMIT 1
+                `, [user_id, campaign.id]);
+                if (voted[0].length) {
+                    return false;
                 }
+            } else {
+                const result = await this.query(`INSERT INTO users (idcard) VALUES (?)`, [user_idcard]);
+                user_id = result[0].insertId;
             }
-            throw new Error('Campagin or candidate not found');
+            await this.query(`
+                INSERT INTO campaign_user (campaign_id, user_id, candidate_id) 
+                VALUES (?, ?, ?)
+            `, [campaign.id, user_id, candidate.id]);
+            candidate.votes++
+            return true;
         } catch (e) {
             throw e;
         }
     }
     async refresh() {
         try {
+            if (this.queue.length) {
+                throw new Error('Vote request(s) processing, please try again later.')
+            }
             this.state.campaigns = [];
-            const campaigns = await this.query('SELECT * FROM campaigns');
+            const campaigns = await this.query('SELECT * FROM campaigns ORDER BY end_date');
             for (let campaign of campaigns[0]) {
                 const votes = await this.query(`SELECT * FROM campaign_user WHERE campaign_id = ?`, [campaign.id]);
                 let count = {}
