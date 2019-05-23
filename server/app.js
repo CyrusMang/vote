@@ -11,13 +11,13 @@ const Counter = require('./modules/counter');
         
         io.on('connection', socket => {
             socket.on('ready', () => {
-                socket.emit('state', counter.state);
+                socket.emit('state', counter.result());
             });
             socket.on('vote', (campagin_id, user_idcard, candidate_id, res) => {
                 counter.vote(campagin_id, user_idcard, candidate_id, (result, e) => {
                     res(result, e);
                     if (!e) {
-                        socket.broadcast.emit('state', counter.state);
+                        socket.broadcast.emit('state', counter.result());
                     }
                 });
             });
