@@ -1,5 +1,9 @@
 version: '3'
 services:
+    client:
+        build: ./client
+        ports:
+            - "80:80"
     sever:
         build: ./server
         ports:
