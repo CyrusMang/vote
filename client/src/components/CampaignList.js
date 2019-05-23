@@ -51,6 +51,9 @@ const Campaign = ({data, setCampaigns}) => {
   }, []);
   
   const submit = useCallback(() => {
+    if (!/^[a-zA-Z][0-9]{7}/i.test(String(result.idcard))) {
+        return setResult(prevState => ({...prevState, error: 'Invalid ID card number, ex: Y0012345'}));
+    }
     socket.emit('vote', data.id, result.idcard, result.candidate_id, (res, e) => {
       if (e) {
         setResult(prevState => ({...prevState, error: e.message}));

@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 const config = require('../config');
-const User = require('../model/user');
-const Campaign = require('../model/campaign');
+const User = require('../models/user');
+const Campaign = require('../models/campaign');
 
 class Counter {
     constructor() {
@@ -13,6 +13,9 @@ class Counter {
     vote(campaign_id, user_idcard, candidate_id, res) {
         if (this.queue.length >= config.queue_limit) {
             return res(null, {message: 'Sorry, our server is busy. please try again later.'});
+        }
+        if (!/^[a-zA-Z][0-9]{7}/i.test(String(user_idcard))) {
+            return res(null, {message: 'Invalid ID card number, ex: Y0012345'});
         }
         const now = new Date();
         const campaign = this.state.campaigns.find(c => c.data.id === campaign_id);
