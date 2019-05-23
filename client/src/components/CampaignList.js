@@ -6,7 +6,15 @@ const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
   
   useEffect(() => {
-    const init = state => setCampaigns(state.campaigns || []);
+    const init = state => {
+      setCampaigns((state.campaigns || []).map(c => {
+        return {
+          ...c,
+          start_date: new Date(c.start_date),
+          end_date: new Date(c.end_date),
+        }
+      }))
+    };
     
     socket.on('state', init);
     socket.emit('ready');
@@ -101,8 +109,8 @@ const Campaign = ({data, setCampaigns}) => {
 Campaign.propTypes = {
   data: PropTypes.shape({
     id: PropTypes.number,
-    start_date: PropTypes.string,
-    end_date: PropTypes.string,
+    start_date: PropTypes.instanceOf(Date),
+    end_date: PropTypes.instanceOf(Date),
     candidates: PropTypes.arrayOf(PropTypes.shape({
       id: PropTypes.number,
       name: PropTypes.string,
