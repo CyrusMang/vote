@@ -8,3 +8,5 @@ Setup
 docker-compose up
 ```
 Need to install all the things at once, may take some time...
+
+Open http://localhost to view it in the browser.
