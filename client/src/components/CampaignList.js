@@ -75,7 +75,7 @@ const Campaign = ({data, setCampaigns}) => {
         setResult(prevState => ({...prevState, status: 'voted'}));
       }
     });
-  }, [data, result, setCampaigns]);
+  }, [data, result, setResult, setCampaigns]);
   
   const now = new Date();
   const activated = data.start_date < now && now < data.end_date;
