@@ -40,7 +40,7 @@ const Campaign = ({data, setCampaigns}) => {
   const select = useCallback(e => {
     const candidate_id = e.target.getAttribute('data-candidate');
     setResult({status: 'selected', candidate_id: parseInt(candidate_id)});
-  }, []);
+  }, [setResult]);
   
   const change = useCallback(e => {
     const input = e.target;
@@ -48,7 +48,7 @@ const Campaign = ({data, setCampaigns}) => {
       ...prevState,
       idcard: input.value,
     }));
-  }, []);
+  }, [setResult]);
   
   const submit = useCallback(() => {
     if (!/^[a-zA-Z][0-9]{7}/i.test(String(result.idcard))) {
